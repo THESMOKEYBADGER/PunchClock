@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "10104570756",
+    "project_id": "punchclock-482dc",
+    "storage_bucket": "punchclock-482dc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:10104570756:android:6bbd35bb54a16f226953d1",
+        "android_client_info": {
+          "package_name": "com.example.punchcardv10"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "10104570756-4gf5a1fot6ics0jf441bdro98faagjb4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQECnToweSyEGJEfk56w33YwO2kgWTOOA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "10104570756-4gf5a1fot6ics0jf441bdro98faagjb4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
