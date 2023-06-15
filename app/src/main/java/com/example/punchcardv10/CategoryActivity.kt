@@ -15,13 +15,6 @@ import android.widget.Spinner
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-private val categoryColors: MutableMap<String, Int> = mutableMapOf()
-
-// Function to retrieve the color associated with a category
-private fun getCategoryColor(category: String): Int? {
-    return categoryColors[category]
-}
-
 class CategoryActivity : Activity(), CategoryAdapter.CategoryDeleteListener {
     private lateinit var colorSpinner: Spinner
     private lateinit var colorPreview: ImageView
@@ -32,7 +25,7 @@ class CategoryActivity : Activity(), CategoryAdapter.CategoryDeleteListener {
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var userId: String
 
-    private val categoriesList: MutableList<Category> = mutableListOf()
+    private val categoriesList: ArrayList<Category> = ArrayList()
     private var categoryIdCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,9 +43,13 @@ class CategoryActivity : Activity(), CategoryAdapter.CategoryDeleteListener {
         val sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         userId = sharedPreferences.getString("userId", "") ?: ""
 
-        AppPreferences.init(applicationContext)
+        AppPreferences.init(applicationContext, userId)
 
-        categoriesList.addAll(AppPreferences.getCategories(userId))
+        AppPreferences.getCategories { categories ->
+            categoriesList.addAll(categories)
+            categoryAdapter.notifyDataSetChanged()
+        }
+
         categoryAdapter = CategoryAdapter(categoriesList, this)
         categoriesRecyclerView.adapter = categoryAdapter
         categoriesRecyclerView.layoutManager = LinearLayoutManager(this)
@@ -87,7 +84,12 @@ class CategoryActivity : Activity(), CategoryAdapter.CategoryDeleteListener {
             val selectedColor = colors[colorSpinner.selectedItemPosition]
             val timeGoal = timeGoalEditText.text.toString()
 
-            saveCategory(categoryName, selectedColor, timeGoal)
+            val category = Category(categoryIdCounter, categoryName, selectedColor, timeGoal)
+            categoriesList.add(category)
+            categoryAdapter.notifyItemInserted(categoriesList.size - 1)
+            categoryIdCounter++
+
+            AppPreferences.saveCategories(categoriesList)
 
             clearFields()
         }
@@ -103,6 +105,8 @@ class CategoryActivity : Activity(), CategoryAdapter.CategoryDeleteListener {
     override fun onDeleteCategory(category: Category) {
         categoriesList.remove(category)
         categoryAdapter.notifyDataSetChanged()
+
+        AppPreferences.saveCategories(categoriesList)
     }
 
     private fun getColorCode(color: String): Int {
@@ -118,16 +122,6 @@ class CategoryActivity : Activity(), CategoryAdapter.CategoryDeleteListener {
             "Black" -> Color.BLACK
             else -> Color.TRANSPARENT
         }
-    }
-
-    private fun saveCategory(categoryName: String, selectedColor: String, timeGoal: String) {
-        val category = Category(categoryIdCounter, categoryName, selectedColor, timeGoal)
-        categoriesList.add(category)
-        categoryAdapter.notifyItemInserted(categoriesList.size - 1)
-        categoryIdCounter++
-
-        // Save the updated categories list
-        AppPreferences.saveCategories(categoriesList, userId)
     }
 
     private fun clearFields() {

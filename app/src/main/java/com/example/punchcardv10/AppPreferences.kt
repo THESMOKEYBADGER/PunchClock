@@ -1,39 +1,49 @@
 package com.example.punchcardv10
 
 import android.content.Context
-import android.content.SharedPreferences
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 object AppPreferences {
-    private const val PREFERENCES_NAME = "MyAppPreferences"
-    private const val KEY_CATEGORIES = "categories"
-    private lateinit var preferences: SharedPreferences
-    private lateinit var appContext: Context
+    private lateinit var firestore: FirebaseFirestore
+    private lateinit var userId: String
 
-    fun init(context: Context) {
-        appContext = context.applicationContext
-        preferences = appContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    fun init(context: Context, userId: String) {
+        firestore = FirebaseFirestore.getInstance()
+        this.userId = userId
     }
 
-    fun saveCategories(categories: List<Category>, userId: String) {
-        val sharedPreferences = appContext.getSharedPreferences("MyAppPreferences_$userId", Context.MODE_PRIVATE)
-        val jsonString = Gson().toJson(categories)
-        sharedPreferences.edit().putString(KEY_CATEGORIES, jsonString).apply()
-    }
+    fun saveCategories(categories: List<Category>) {
+        val categoriesCollection = firestore.collection("users").document(userId).collection("categories")
+        val batch = firestore.batch()
 
-    fun getCategories(userId: String): List<Category> {
-        val sharedPreferences = appContext.getSharedPreferences("MyAppPreferences_$userId", Context.MODE_PRIVATE)
-        val jsonString = sharedPreferences.getString(KEY_CATEGORIES, null)
-        return if (jsonString != null) {
-            val type = object : TypeToken<List<Category>>() {}.type
-            Gson().fromJson(jsonString, type) ?: emptyList()
-        } else {
-            emptyList()
+        for (category in categories) {
+            val categoryDocument = categoriesCollection.document(category.id.toString())
+            batch.set(categoryDocument, category, SetOptions.merge())
         }
+
+        batch.commit()
     }
 
-    private fun getCategoriesKey(userId: String): String {
-        return "categories_$userId"
+    fun getCategories(callback: (List<Category>) -> Unit) {
+        val categoriesCollection = firestore.collection("users").document(userId).collection("categories")
+        val categoriesList = mutableListOf<Category>()
+
+        categoriesCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                for (document in querySnapshot.documents) {
+                    val category = document.toObject(Category::class.java)
+                    category?.let { categoriesList.add(it) }
+                }
+                callback(categoriesList)
+            }
+            .addOnFailureListener { exception ->
+                exception.printStackTrace()
+                callback(emptyList())
+            }
     }
 }

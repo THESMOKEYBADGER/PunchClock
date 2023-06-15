@@ -4,27 +4,20 @@
 
     <application
         android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        >
-        <activity
-            android:name=".BindingAdapters"
-            android:exported="false"
-            android:label="@string/title_activity_binding_adapters"
-            android:theme="@style/Theme.PUNCHCARDv10" />
+        android:supportsRtl="true">
         <activity
             android:name=".TimeEntry"
             android:exported="false"
             android:label="@string/title_activity_time_entry"
             android:theme="@style/Theme.PUNCHCARDv10" />
         <activity
-            android:name=".SharedPreferenceHelper.kt"
+            android:name=".UserActivity"
             android:exported="false"
-            android:label="@string/title_activity_shared_preference_helper.kt"
+            android:label="@string/title_activity_user"
             android:theme="@style/Theme.PUNCHCARDv10" />
         <activity
             android:name=".FocusActivity"
@@ -47,7 +40,7 @@
             android:exported="true"
             android:label="LogIn">
 
-            <!-- Set LoginActivity as the launcher activity -->
+            <!-- Set com.example.punchcardv10.LoginActivity as the launcher activity -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

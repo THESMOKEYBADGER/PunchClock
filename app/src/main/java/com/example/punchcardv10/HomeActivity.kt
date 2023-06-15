@@ -18,23 +18,14 @@ import java.util.*
 
 class HomeActivity : Activity() {
 
-    data class TimeEntry(
-        val id: UUID = UUID.randomUUID(),
-        val title: String,
-        val category: String,
-        val startTime: Long,
-        val duration: Long
-    )
-
     private lateinit var binding: ActivityHomeBinding
     private lateinit var timeEntriesRecyclerView: RecyclerView
-    private lateinit var timeEntriesList: MutableList<TimeEntry>
+    private lateinit var userActivitiesList: ArrayList<UserActivity>
+    private lateinit var categoriesList: ArrayList<Category>
     private lateinit var sharedPreferences: SharedPreferences
     private lateinit var userId: String
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var adapter: TimeEntryAdapter
-
-    private lateinit var categories: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,17 +33,12 @@ class HomeActivity : Activity() {
         setContentView(binding.root)
 
         sharedPreferences = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-
-        // Initialize AppPreferences
-        AppPreferences.init(this)
-
-        // Get the user ID from the shared preferences
         userId = sharedPreferences.getString("userId", "") ?: ""
 
-        // Initialize the time entries list and adapter
-        timeEntriesList = mutableListOf()
+        // Initialize the user activities list and adapter
+        userActivitiesList = ArrayList()
         layoutManager = LinearLayoutManager(this)
-        adapter = TimeEntryAdapter(timeEntriesList)
+        adapter = TimeEntryAdapter(userActivitiesList)
 
         // Set up the time entries recycler view
         timeEntriesRecyclerView = binding.timeEntriesRecyclerView
@@ -64,13 +50,16 @@ class HomeActivity : Activity() {
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
         binding.currentDateTimeTextView.text = currentDateTime
 
-        // Get categories from AppPreferences
-        categories = AppPreferences.getCategories(userId).map { it.categoryName }
+        AppPreferences.init(applicationContext, userId)
 
-        // Populate category spinner with data
-        val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.categorySpinner.adapter = categoryAdapter
+        AppPreferences.getCategories { categories ->
+            categoriesList = ArrayList(categories)
+
+            // Populate category spinner with data
+            val categoryAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories.map { it.categoryName })
+            categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            binding.categorySpinner.adapter = categoryAdapter
+        }
 
         // Handle punch-in button click
         binding.punchInButton.setOnClickListener {
@@ -78,45 +67,41 @@ class HomeActivity : Activity() {
             val title = binding.editTextText.text?.toString()
 
             if (!title.isNullOrEmpty() && selectedCategory != null) {
-                // Create a new TimeEntry object with a unique ID and start time
+                // Create a new UserActivity object with a unique ID and start time
                 val startTime = System.currentTimeMillis()
-                val timeEntry = TimeEntry(
+                val userActivity = UserActivity(
+                    id = UUID.randomUUID().toString(),
                     title = title,
                     category = selectedCategory,
                     startTime = startTime,
                     duration = 0L
                 )
 
-                // Add the time entry to the list
-                timeEntriesList.add(timeEntry)
-                adapter.notifyItemInserted(timeEntriesList.size - 1)
+                // Add the user activity to the list
+                userActivitiesList.add(userActivity)
+                adapter.notifyItemInserted(userActivitiesList.size - 1)
 
-                // Start FocusActivity and pass the title, category, start time, and time entry ID as extras
+                // Start FocusActivity and pass the title, category, start time, and user activity ID as extras
                 val intent = Intent(this@HomeActivity, FocusActivity::class.java)
                 intent.putExtra("title", title)
                 intent.putExtra("category", selectedCategory)
                 intent.putExtra("startTime", startTime)
-                intent.putExtra("timeEntryId", timeEntry.id.toString())
+                intent.putExtra("userActivityId", userActivity.id)
                 startActivity(intent)
 
                 // Clear the fields or perform any additional actions after starting the timer.
                 binding.editTextText.text?.clear()
 
-                // Save the updated time entries list to shared preferences
-                saveTimeEntriesList()
+                // Save the updated user activities list to shared preferences
+                saveUserActivitiesList()
             }
         }
 
-        val timeEntriesListJson = sharedPreferences.getString("timeEntriesList_$userId", null)
-        timeEntriesList = if (timeEntriesListJson != null) {
-            val type = object : TypeToken<List<TimeEntry>>() {}.type
-            Gson().fromJson<List<TimeEntry>>(timeEntriesListJson, type)?.toMutableList() ?: mutableListOf()
-        } else {
-            mutableListOf()
-        }
+        // Load user activities from shared preferences
+        loadUserActivitiesList()
 
-        // Update the adapter with the updated time entries list
-        adapter = TimeEntryAdapter(timeEntriesList)
+        // Update the adapter with the loaded user activities list
+        adapter = TimeEntryAdapter(userActivitiesList)
         timeEntriesRecyclerView.adapter = adapter
 
         val categoryButton: ImageButton = binding.buttonCategory
@@ -128,14 +113,24 @@ class HomeActivity : Activity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        // Save the time entries list to shared preferences
-        saveTimeEntriesList()
+        // Save the user activities list to shared preferences
+        saveUserActivitiesList()
     }
 
-    private fun saveTimeEntriesList() {
+    private fun saveUserActivitiesList() {
         val editor = sharedPreferences.edit()
-        val timeEntriesListJson = Gson().toJson(timeEntriesList)
-        editor.putString("timeEntriesList_$userId", timeEntriesListJson)
+        val userActivitiesListJson = Gson().toJson(userActivitiesList)
+        editor.putString("userActivitiesList_$userId", userActivitiesListJson)
         editor.apply()
+    }
+
+    private fun loadUserActivitiesList() {
+        val userActivitiesListJson = sharedPreferences.getString("userActivitiesList_$userId", null)
+        userActivitiesList = if (userActivitiesListJson != null) {
+            val type = object : TypeToken<ArrayList<UserActivity>>() {}.type
+            Gson().fromJson<ArrayList<UserActivity>>(userActivitiesListJson, type) ?: ArrayList()
+        } else {
+            ArrayList()
+        }
     }
 }

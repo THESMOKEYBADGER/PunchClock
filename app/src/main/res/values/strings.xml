@@ -53,4 +53,6 @@
     <string name="title_activity_time_entry">TimeEntry</string>
     <string name="title_activity_shared_preference_helper.kt">SharedPreferenceHelper.kt</string>
     <string name="title_activity_binding_adapters">BindingAdapters</string>
+    <string name="title_activity_user_activity.kt">UserActivity.kt</string>
+    <string name="title_activity_user">UserActivity</string>
 </resources>
