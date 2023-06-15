@@ -1,5 +1,6 @@
 package com.example.punchcardv10
 
+import HomeActivity
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -25,8 +26,8 @@ class LoginActivity : Activity() {
 
         firestore = FirebaseFirestore.getInstance()
 
-        usernameInput = findViewById(R.id.username_input)
-        passwordInput = findViewById(R.id.password_input)
+        usernameInput = findViewById(R.id.username_input_li)
+        passwordInput = findViewById(R.id.password_input_li)
         registerButton = findViewById(R.id.register_button)
         punchInButton = findViewById(R.id.punch_in_button)
         errorMessage = findViewById(R.id.error_message)

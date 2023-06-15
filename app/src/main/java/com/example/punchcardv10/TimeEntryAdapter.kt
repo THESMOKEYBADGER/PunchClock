@@ -8,9 +8,10 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.util.ArrayList
 import java.util.concurrent.TimeUnit
 
-class TimeEntryAdapter(private val timeEntries: MutableList<HomeActivity.TimeEntry>) :
+class TimeEntryAdapter(private val timeEntries: ArrayList<UserActivity>) :
     RecyclerView.Adapter<TimeEntryAdapter.TimeEntryViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TimeEntryViewHolder {
@@ -46,7 +47,7 @@ class TimeEntryAdapter(private val timeEntries: MutableList<HomeActivity.TimeEnt
             }
         }
 
-        fun bind(timeEntry: HomeActivity.TimeEntry) {
+        fun bind(timeEntry: UserActivity) {
             titleTextView.text = timeEntry.title
             categoryCircle.backgroundTintList = getColorStateListByCategory(timeEntry.category)
             durationTextView.text = formatDuration(timeEntry.duration)
@@ -82,5 +83,3 @@ class TimeEntryAdapter(private val timeEntries: MutableList<HomeActivity.TimeEnt
         // Save the updated time entries list to shared preferences
     }
 }
-
-

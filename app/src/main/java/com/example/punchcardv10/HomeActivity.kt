@@ -1,15 +1,16 @@
-package com.example.punchcardv10
-
 import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.View
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.punchcardv10.AppPreferences
+import com.example.punchcardv10.Category
+import com.example.punchcardv10.CategoryActivity
+import com.example.punchcardv10.TimeEntryAdapter
+import com.example.punchcardv10.UserActivity
 import com.example.punchcardv10.databinding.ActivityHomeBinding
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -26,6 +27,13 @@ class HomeActivity : Activity() {
     private lateinit var userId: String
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var adapter: TimeEntryAdapter
+
+    data class TimeEntry(
+        val title: String,
+        val category: String,
+        val startTime: Long,
+        val duration: Long
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
